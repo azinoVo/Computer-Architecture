@@ -2,6 +2,7 @@
 
 import sys
 
+
 class CPU:
     """Main CPU class."""
 
@@ -10,7 +11,7 @@ class CPU:
         self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0
-
+        self.stack_pointer_index = 7
 
     def load(self):
         """Load a program into memory."""
@@ -21,19 +22,54 @@ class CPU:
 
         program = [
             # From print8.ls8
-            0b10000010, # LDI R0,8
+            0b10000010,  # LDI R0,8
             0b00000000,
             0b00001000,
-            0b10000010, # LDI R1,9
+            0b10000010,  # LDI R1,9
             0b00000001,
             0b00001001,
-            0b10100010, # MUL R0,R1
+            0b10100010,  # MUL R0,R1
             0b00000010,
             0b00000001,
-            0b01000111, # PRN R0
+            0b01000111,  # PRN R0
             0b00000000,
-            0b00000001 # HLT
+            0b00000001  # HLT
         ]
+
+        # program = [
+        #     # From stack.ls8
+        #     0b10000010,  # LDI R0,1
+        #     0b00000000,
+        #     0b00000001,
+        #     0b10000010,  # LDI R1,2
+        #     0b00000001,
+        #     0b00000010,
+        #     0b01000101,  # PUSH R0
+        #     0b00000000,
+        #     0b01000101,  # PUSH R1
+        #     0b00000001,
+        #     0b10000010,  # LDI R0,3
+        #     0b00000000,
+        #     0b00000011,
+        #     0b01000110,  # POP R0
+        #     0b00000000,
+        #     0b01000111,  # PRN R0
+        #     0b00000000,
+        #     0b10000010,  # LDI R0,4
+        #     0b00000000,
+        #     0b00000100,
+        #     0b01000101,  # PUSH R0
+        #     0b00000000,
+        #     0b01000110,  # POP R2
+        #     0b00000010,
+        #     0b01000110,  # POP R1
+        #     0b00000001,
+        #     0b01000111,  # PRN R2
+        #     0b00000010,
+        #     0b01000111,  # PRN R1
+        #     0b00000001,
+        #     0b00000001,  # HLT
+        # ]
 
         for instruction in program:
             self.ram[address] = instruction
@@ -63,7 +99,6 @@ class CPU:
         #     print(f"{sys.argv[0]}: {sys.argv[1]} not found")
         #     sys.exit(2)
 
-        
         for x in range(len(self.ram)-249):
             print(self.ram[x])
 
@@ -92,7 +127,7 @@ class CPU:
             self.reg[reg_a] = reg_b*reg_a
             print("Register", self.reg[reg_a])
             return reg_a * reg_b
-        #elif op == "SUB": etc
+        # elif op == "SUB": etc
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -104,8 +139,8 @@ class CPU:
 
         print(f"TRACE: %02X | %02X %02X %02X |" % (
             self.pc,
-            #self.fl,
-            #self.ie,
+            # self.fl,
+            # self.ie,
             self.ram_read(self.pc),
             self.ram_read(self.pc + 1),
             self.ram_read(self.pc + 2)
@@ -139,7 +174,9 @@ class CPU:
         PRN = 0b01000111
         HLT = 0b00000001
         MUL = 0b10100010
-        
+        PUSH = 0b01000101
+        POP = 0b01000110
+
         running = True
 
         while running:
@@ -152,17 +189,39 @@ class CPU:
                 added = self.alu("ADD", operand_a, operand_b)
                 self.pc += 3
                 print("Added", added)
+                print(self.reg)
                 continue
 
             elif IR == MUL:
                 multiplied = self.alu("MUL", operand_a, operand_b)
                 self.pc += 3
                 print("MULTIPLIED", multiplied)
+                print(self.reg)
                 continue
 
             elif IR == PRN:
                 print("IR == PRN")
                 self.pc += 2
+
+            elif IR == PUSH:
+                # reg = self.ram[pc + 1]
+                # val = self.reg[reg]
+                # # Decrement the SP.
+                # self.reg[self.stack_pointer_index] -= 1
+                # # Copy the value in the given register to the address pointed to by SP.
+                # self.ram[reg[self.stack_pointer_index]] = val
+                # pc += 2
+                pass
+
+            elif IR == POP:
+                # reg = self.ram[self.pc + 1]
+                # val = self.reg[self.reg[self.stack_pointer_index]]
+                # # Copy the value from the address pointed to by SP to the given register.
+                # self.reg[reg] = val
+                # # Increment SP.
+                # self.reg[self.stack_pointer_index] += 1
+                # self.pc += 2
+                pass
 
             elif IR == HLT:
                 print("IR == HLT")
