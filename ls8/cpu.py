@@ -17,21 +17,51 @@ class CPU:
 
         address = 0
 
-        # For now, we've just hardcoded a program:
+        # # For now, we've just hardcoded a program:
 
         program = [
             # From print8.ls8
             0b10000010, # LDI R0,8
             0b00000000,
             0b00001000,
+            0b10000010, # LDI R1,9
+            0b00000001,
+            0b00001001,
+            0b10100010, # MUL R0,R1
+            0b00000010,
+            0b00000001,
             0b01000111, # PRN R0
             0b00000000,
-            0b00000001, # HLT
+            0b00000001 # HLT
         ]
 
         for instruction in program:
             self.ram[address] = instruction
             address += 1
+
+        # try:
+        #     address = 0
+
+        #     with open(sys.argv[1]) as f:
+        #         for line in f:
+        #         # Process comments:
+        #         # Ignore anything after a # symbol
+        #             comment_split = line.split("#")
+
+        #         # Convert any numbers from binary strings to integers
+        #             num = comment_split[0].strip()
+        #             try:
+        #                 val = int(num, 2)
+        #             except ValueError:
+        #                 continue
+
+        #             self.ram[address] = val
+        #             address += 1
+        #         # print(f"{val:08b}: {val:d}")
+
+        # except FileNotFoundError:
+        #     print(f"{sys.argv[0]}: {sys.argv[1]} not found")
+        #     sys.exit(2)
 
         
         for x in range(len(self.ram)-249):
@@ -54,8 +84,14 @@ class CPU:
             print("opA", reg_a, "opB", reg_b)
             # self.reg[reg_a] += self.reg[reg_b]
             self.reg[reg_a] = reg_b
-            print("Register", self.reg[0])
+            print("Register", self.reg[reg_a])
             return reg_a + reg_b
+
+        elif op == "MUL":
+            print("opA", reg_a, "opB", reg_b)
+            self.reg[reg_a] = reg_b*reg_a
+            print("Register", self.reg[reg_a])
+            return reg_a * reg_b
         #elif op == "SUB": etc
         else:
             raise Exception("Unsupported ALU operation")
@@ -87,15 +123,22 @@ class CPU:
         #     0b10000010, # LDI R0,8
         #     0b00000000,
         #     0b00001000,
+        #     0b10000010, # LDI R1,9
+        #     0b00000001,
+        #     0b00001001,
+        #     0b10100010, # MUL R0,R1
+        #     0b00000000,
+        #     0b00000001,
         #     0b01000111, # PRN R0
         #     0b00000000,
-        #     0b00000001, # HLT
+        #     0b00000001 # HLT
         # ]
 
         # Head tags for instructions
         LDI = 0b10000010
         PRN = 0b01000111
         HLT = 0b00000001
+        MUL = 0b10100010
         
         running = True
 
@@ -109,6 +152,12 @@ class CPU:
                 added = self.alu("ADD", operand_a, operand_b)
                 self.pc += 3
                 print("Added", added)
+                continue
+
+            elif IR == MUL:
+                multiplied = self.alu("MUL", operand_a, operand_b)
+                self.pc += 3
+                print("MULTIPLIED", multiplied)
                 continue
 
             elif IR == PRN:
