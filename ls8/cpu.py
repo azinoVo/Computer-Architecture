@@ -7,9 +7,9 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
-        self.ram = [None] * 256
-        self.register = [None] * 8
-        self.pc = self.register[0]
+        self.ram = [0] * 256
+        self.reg = [0] * 8
+        self.pc = 0
 
 
     def load(self):
@@ -32,6 +32,9 @@ class CPU:
         for instruction in program:
             self.ram[address] = instruction
             address += 1
+        
+        # for x in range(len(self.ram)):
+        #     print(self.ram[x])
 
     def ram_read(self, memory_address):
         return self.ram[memory_address]
@@ -45,6 +48,9 @@ class CPU:
 
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
+            operand_a = self.ram[reg_a]
+            operand_b = self.ram[reg_b]
+            return operand_a + operand_b
         #elif op == "SUB": etc
         else:
             raise Exception("Unsupported ALU operation")
@@ -71,7 +77,25 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        operand_a = self.ram_read(self.register[1])
-        operand_b = self.ram_read(self.register[2])
-        
-        pass
+
+        # instructions = [
+        #     "LDI": 0b10000010,
+        #     "PRN": 0b01000111,
+        #     "HLT": 0b00000001
+        # ]
+
+        for i in range(len(self.ram)-249):
+            print("MEMORY", self.ram[i])
+            if self.ram[i] is 130:
+                # operand_a = self.ram_read(self.reg[self.pc+1])
+                # operand_b = self.ram_read(self.reg[self.pc+2])
+                added = self.alu("ADD", self.pc+1, self.pc+2)
+                self.pc += 3
+                print("Added", added)
+                continue
+            elif self.ram[i] is 71:
+                pass
+            elif self.ram[i] is 1:
+                sys.exit()
+
+
