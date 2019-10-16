@@ -20,56 +20,56 @@ class CPU:
 
         # # For now, we've just hardcoded a program:
 
-        program = [
-            # From print8.ls8
-            0b10000010,  # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b10000010,  # LDI R1,9
-            0b00000001,
-            0b00001001,
-            0b10100010,  # MUL R0,R1
-            0b00000010,
-            0b00000001,
-            0b01000111,  # PRN R0
-            0b00000000,
-            0b00000001  # HLT
-        ]
-
         # program = [
-        #     # From stack.ls8
-        #     0b10000010,  # LDI R0,1
+        #     # From print8.ls8
+        #     0b10000010,  # LDI R0,8
         #     0b00000000,
+        #     0b00001000,
+        #     0b10000010,  # LDI R1,9
         #     0b00000001,
-        #     0b10000010,  # LDI R1,2
-        #     0b00000001,
+        #     0b00001001,
+        #     0b10100010,  # MUL R0,R1
         #     0b00000010,
-        #     0b01000101,  # PUSH R0
-        #     0b00000000,
-        #     0b01000101,  # PUSH R1
         #     0b00000001,
-        #     0b10000010,  # LDI R0,3
-        #     0b00000000,
-        #     0b00000011,
-        #     0b01000110,  # POP R0
-        #     0b00000000,
         #     0b01000111,  # PRN R0
         #     0b00000000,
-        #     0b10000010,  # LDI R0,4
-        #     0b00000000,
-        #     0b00000100,
-        #     0b01000101,  # PUSH R0
-        #     0b00000000,
-        #     0b01000110,  # POP R2
-        #     0b00000010,
-        #     0b01000110,  # POP R1
-        #     0b00000001,
-        #     0b01000111,  # PRN R2
-        #     0b00000010,
-        #     0b01000111,  # PRN R1
-        #     0b00000001,
-        #     0b00000001,  # HLT
+        #     0b00000001  # HLT
         # ]
+
+        program = [
+            # From stack.ls8
+            0b10000010,  # LDI R0,1
+            0b00000000,
+            0b00000001,
+            0b10000010,  # LDI R1,2
+            0b00000001,
+            0b00000010,
+            0b01000101,  # PUSH R0
+            0b00000000,
+            0b01000101,  # PUSH R1
+            0b00000001,
+            0b10000010,  # LDI R0,3
+            0b00000000,
+            0b00000011,
+            0b01000110,  # POP R0
+            0b00000000,
+            0b01000111,  # PRN R0
+            0b00000000,
+            0b10000010,  # LDI R0,4
+            0b00000000,
+            0b00000100,
+            0b01000101,  # PUSH R0
+            0b00000000,
+            0b01000110,  # POP R2
+            0b00000010,
+            0b01000110,  # POP R1
+            0b00000001,
+            0b01000111,  # PRN R2
+            0b00000010,
+            0b01000111,  # PRN R1
+            0b00000001,
+            0b00000001,  # HLT
+        ]
 
         for instruction in program:
             self.ram[address] = instruction
@@ -99,7 +99,7 @@ class CPU:
         #     print(f"{sys.argv[0]}: {sys.argv[1]} not found")
         #     sys.exit(2)
 
-        for x in range(len(self.ram)-249):
+        for x in range(len(self.ram)-230):
             print(self.ram[x])
 
         for y in range(len(self.reg)):
@@ -204,13 +204,15 @@ class CPU:
                 self.pc += 2
 
             elif IR == PUSH:
-                # reg = self.ram[pc + 1]
+                # reg = self.ram[self.pc + 1]
                 # val = self.reg[reg]
                 # # Decrement the SP.
                 # self.reg[self.stack_pointer_index] -= 1
                 # # Copy the value in the given register to the address pointed to by SP.
                 # self.ram[reg[self.stack_pointer_index]] = val
-                # pc += 2
+                print("IN PUSH, RAM", self.ram)
+                print("IN PUSH, REG", self.reg)
+                self.pc += 2
                 pass
 
             elif IR == POP:
@@ -220,7 +222,9 @@ class CPU:
                 # self.reg[reg] = val
                 # # Increment SP.
                 # self.reg[self.stack_pointer_index] += 1
-                # self.pc += 2
+                print("IN POP, RAM", self.ram)
+                print("IN POP, REG", self.reg)
+                self.pc += 2
                 pass
 
             elif IR == HLT:
