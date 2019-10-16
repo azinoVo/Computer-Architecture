@@ -32,9 +32,13 @@ class CPU:
         for instruction in program:
             self.ram[address] = instruction
             address += 1
+
         
-        # for x in range(len(self.ram)):
-        #     print(self.ram[x])
+        for x in range(len(self.ram)-249):
+            print(self.ram[x])
+
+        for y in range(len(self.reg)):
+            print("register", self.reg[y])
 
     def ram_read(self, memory_address):
         return self.ram[memory_address]
@@ -47,10 +51,11 @@ class CPU:
         """ALU operations."""
 
         if op == "ADD":
-            self.reg[reg_a] += self.reg[reg_b]
-            operand_a = self.ram[reg_a]
-            operand_b = self.ram[reg_b]
-            return operand_a + operand_b
+            print("opA", reg_a, "opB", reg_b)
+            # self.reg[reg_a] += self.reg[reg_b]
+            self.reg[reg_a] = reg_b
+            print("Register", self.reg[0])
+            return reg_a + reg_b
         #elif op == "SUB": etc
         else:
             raise Exception("Unsupported ALU operation")
@@ -77,25 +82,48 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-
-        # instructions = [
-        #     "LDI": 0b10000010,
-        #     "PRN": 0b01000111,
-        #     "HLT": 0b00000001
+        # program = [
+        #     # From print8.ls8
+        #     0b10000010, # LDI R0,8
+        #     0b00000000,
+        #     0b00001000,
+        #     0b01000111, # PRN R0
+        #     0b00000000,
+        #     0b00000001, # HLT
         # ]
 
-        for i in range(len(self.ram)-249):
-            print("MEMORY", self.ram[i])
-            if self.ram[i] is 130:
-                # operand_a = self.ram_read(self.reg[self.pc+1])
-                # operand_b = self.ram_read(self.reg[self.pc+2])
-                added = self.alu("ADD", self.pc+1, self.pc+2)
+        # Head tags for instructions
+        LDI = 0b10000010
+        PRN = 0b01000111
+        HLT = 0b00000001
+        
+        running = True
+
+        while running:
+            IR = self.ram[self.pc]
+            operand_a = self.ram[self.pc+1]
+            operand_b = self.ram[self.pc+2]
+            print("MEMORY", IR)
+
+            if IR == LDI:
+                added = self.alu("ADD", operand_a, operand_b)
                 self.pc += 3
                 print("Added", added)
                 continue
-            elif self.ram[i] is 71:
-                pass
-            elif self.ram[i] is 1:
-                sys.exit()
+
+            elif IR == PRN:
+                print("IR == PRN")
+                self.pc += 2
+
+            elif IR == HLT:
+                print("IR == HLT")
+                running = False
+
+            else:
+                print("IR == ELSE")
+                sys.exit(1)
 
 
+cpu = CPU()
+cpu.load()
+cpu.run()
