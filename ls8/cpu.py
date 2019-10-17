@@ -97,7 +97,7 @@ class CPU:
             0b01010000,  # CALL R1
             0b00000001,
             0b00000001, # HLT
-            # MULT2PRINT (address 24):
+            # MUL2PRINT (address 24):
             0b10100000,  # ADD R0,R0
             0b00000000,
             0b00000000,
@@ -152,7 +152,7 @@ class CPU:
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
-        if op == "ADD":
+        if op == "LDI":
             print("opA", reg_a, "opB", reg_b)
             # self.register[reg_a] += self.register[reg_b]
             self.register[reg_a] = reg_b
@@ -200,6 +200,7 @@ class CPU:
         POP = 0b01000110
         CALL = 0b01010000 
         RET = 0b00010001
+        ADD = 0b10100000
 
         running = True
 
@@ -207,58 +208,77 @@ class CPU:
             IR = self.ram[self.pc]
             operand_a = self.ram[self.pc+1]
             operand_b = self.ram[self.pc+2]
-            print("MEMORY", IR)
+            # print("MEMORY", IR)
 
             if IR == LDI:
-                added = self.alu("ADD", operand_a, operand_b)
+                registered = self.alu("LDI", operand_a, operand_b)
                 self.pc += 3
-                print("Added", added)
+                print("LDI", registered)
                 print(self.register)
                 continue
 
             elif IR == MUL:
                 multiplied = self.alu("MUL", operand_a, operand_b)
                 self.pc += 3
-                print("multiply at index zero", self.register[0])
-                print("MULTIPLIED", multiplied)
-                print(self.register)
+                # print("multiply at index zero", self.register[0])
+                print("MUL", multiplied)
+                # print(self.register)
                 continue
 
             elif IR == PRN:
-                print("IR == PRN")
+                # print("IR == PRN")
+                print("PRN", self.register[operand_a])
                 self.pc += 2
 
+            elif IR == ADD:
+                added = self.register[operand_a] + self.register[operand_b]
+                print("ADD:", self.register[operand_a], "+", self.register[operand_b], "=", added)
+                self.pc += 3
+
             elif IR == PUSH:
+                print("PUSH")
                 # Change the position within the stack downward by lowering stack pointer
                 self.register[self.sp_index] -= 1
                 # value is stored in the register at index of specified pc+1
                 value = self.register[operand_a]
                 # Set the value to the stack in ram specified by R7 or stack pointer
                 self.ram[self.register[self.sp_index]] = value
-                print("IN PUSH, RAM", self.ram)
-                print("IN PUSH, REG", self.register)
+                # print("IN PUSH, RAM", self.ram)
+                # print("IN PUSH, REG", self.register)
+                # print("PUSHED", value)
                 self.pc += 2
                 pass
 
             elif IR == POP:
+                print("POP")
                 # Copy the value at SP in ram into specified register
                 # then increment
                 value = self.ram[self.register[self.sp_index]]
                 self.register[operand_a] = value
                 self.register[self.sp_index] += 1
-                print("IN POP, RAM", self.ram)
-                print("IN POP, REG", self.register)
+                # print("IN POP, RAM", self.ram)
+                # print("IN POP, REG", self.register)
+                # print("POPPED", value)
+
                 self.pc += 2
                 pass
 
             elif IR == CALL:
-                pass
+                print("CALL")
+                self.register[self.sp_index] -= 1
+                self.ram[self.register[self.sp_index]] = self.pc + 2
+                reg = self.ram[self.pc + 1]
+                self.pc = self.register[reg]
 
             elif IR == RET:
+                print("RETURN")
+                self.pc = self.ram[self.register[self.sp_index]]
+                self.register[self.sp_index] += 1
                 pass
 
             elif IR == HLT:
                 print("IR == HLT")
+                print("PC at HLT", self.pc)
                 running = False
 
             else:
