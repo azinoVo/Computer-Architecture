@@ -19,7 +19,7 @@ class CPU:
         address = 0
 
         # # For now, we've just hardcoded a program:
-
+        # Program for ADD and MUL
         # program = [
         #     # From print8.ls8
         #     0b10000010,  # LDI R0,8
@@ -36,39 +36,74 @@ class CPU:
         #     0b00000001  # HLT
         # ]
 
+        # Push and Pop Program
+        # program = [
+        #     # From stack.ls8
+        #     0b10000010,  # LDI R0,1
+        #     0b00000000,
+        #     0b00000001,
+        #     0b10000010,  # LDI R1,2
+        #     0b00000001,
+        #     0b00000010,
+        #     0b01000101,  # PUSH R0
+        #     0b00000000,
+        #     0b01000101,  # PUSH R1
+        #     0b00000001,
+        #     0b10000010,  # LDI R0,3
+        #     0b00000000,
+        #     0b00000011,
+        #     0b01000110,  # POP R0
+        #     0b00000000,
+        #     0b01000111,  # PRN R0
+        #     0b00000000,
+        #     0b10000010,  # LDI R0,4
+        #     0b00000000,
+        #     0b00000100,
+        #     0b01000101,  # PUSH R0
+        #     0b00000000,
+        #     0b01000110,  # POP R2
+        #     0b00000010,
+        #     0b01000110,  # POP R1
+        #     0b00000001,
+        #     0b01000111,  # PRN R2
+        #     0b00000010,
+        #     0b01000111,  # PRN R1
+        #     0b00000001,
+        #     0b00000001,  # HLT
+        # ]
+
         program = [
-            # From stack.ls8
-            0b10000010,  # LDI R0,1
-            0b00000000,
+            0b10000010,  # LDI R1,MULT2PRINT
             0b00000001,
-            0b10000010,  # LDI R1,2
-            0b00000001,
-            0b00000010,
-            0b01000101,  # PUSH R0
+            0b00011000,
+            0b10000010, # LDI R0,10
             0b00000000,
-            0b01000101,  # PUSH R1
+            0b00001010,
+            0b01010000,  # CALL R1
             0b00000001,
-            0b10000010,  # LDI R0,3
+            0b10000010,  # LDI R0,15
             0b00000000,
-            0b00000011,
-            0b01000110,  # POP R0
+            0b00001111,
+            0b01010000,  # CALL R1
+            0b00000001,
+            0b10000010,  # LDI R0,18
+            0b00000000,
+            0b00010010,
+            0b01010000,  # CALL R1
+            0b00000001,
+            0b10000010,  # LDI R0,30
+            0b00000000,
+            0b00011110,
+            0b01010000,  # CALL R1
+            0b00000001,
+            0b00000001, # HLT
+            # MULT2PRINT (address 24):
+            0b10100000,  # ADD R0,R0
+            0b00000000,
             0b00000000,
             0b01000111,  # PRN R0
             0b00000000,
-            0b10000010,  # LDI R0,4
-            0b00000000,
-            0b00000100,
-            0b01000101,  # PUSH R0
-            0b00000000,
-            0b01000110,  # POP R2
-            0b00000010,
-            0b01000110,  # POP R1
-            0b00000001,
-            0b01000111,  # PRN R2
-            0b00000010,
-            0b01000111,  # PRN R1
-            0b00000001,
-            0b00000001,  # HLT
+            0b00010001,  # RET
         ]
 
         for instruction in program:
@@ -156,22 +191,6 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        # program = [
-        #     # From print8.ls8
-        #     0b10000010, # LDI R0,8
-        #     0b00000000,
-        #     0b00001000,
-        #     0b10000010, # LDI R1,9
-        #     0b00000001,
-        #     0b00001001,
-        #     0b10100010, # MUL R0,R1
-        #     0b00000000,
-        #     0b00000001,
-        #     0b01000111, # PRN R0
-        #     0b00000000,
-        #     0b00000001 # HLT
-        # ]
-
         # Head tags for instructions
         LDI = 0b10000010
         PRN = 0b01000111
@@ -179,6 +198,8 @@ class CPU:
         MUL = 0b10100010
         PUSH = 0b01000101
         POP = 0b01000110
+        CALL = 0b01010000 
+        RET = 0b00010001
 
         running = True
 
@@ -208,9 +229,11 @@ class CPU:
                 self.pc += 2
 
             elif IR == PUSH:
-                # Push the value at pc in memory to the index of operand_a within register
+                # Change the position within the stack downward by lowering stack pointer
                 self.register[self.sp_index] -= 1
+                # value is stored in the register at index of specified pc+1
                 value = self.register[operand_a]
+                # Set the value to the stack in ram specified by R7 or stack pointer
                 self.ram[self.register[self.sp_index]] = value
                 print("IN PUSH, RAM", self.ram)
                 print("IN PUSH, REG", self.register)
@@ -218,12 +241,20 @@ class CPU:
                 pass
 
             elif IR == POP:
+                # Copy the value at SP in ram into specified register
+                # then increment
                 value = self.ram[self.register[self.sp_index]]
                 self.register[operand_a] = value
                 self.register[self.sp_index] += 1
                 print("IN POP, RAM", self.ram)
                 print("IN POP, REG", self.register)
                 self.pc += 2
+                pass
+
+            elif IR == CALL:
+                pass
+
+            elif IR == RET:
                 pass
 
             elif IR == HLT:
