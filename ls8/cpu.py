@@ -8,10 +8,10 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
-        self.ram = [0] * 256
-        self.reg = [0] * 8
+        self.ram = [0] * 75
+        self.register = [0] * 8
         self.pc = 0
-        self.stack_pointer_index = 7
+        self.sp_index = 7
 
     def load(self):
         """Load a program into memory."""
@@ -29,7 +29,7 @@ class CPU:
         #     0b00000001,
         #     0b00001001,
         #     0b10100010,  # MUL R0,R1
-        #     0b00000010,
+        #     0b00000000,
         #     0b00000001,
         #     0b01000111,  # PRN R0
         #     0b00000000,
@@ -99,11 +99,13 @@ class CPU:
         #     print(f"{sys.argv[0]}: {sys.argv[1]} not found")
         #     sys.exit(2)
 
-        for x in range(len(self.ram)-230):
-            print(self.ram[x])
+        # for x in range(len(self.ram)):
+        #     print(self.ram[x])
 
-        for y in range(len(self.reg)):
-            print("register", self.reg[y])
+        # for y in range(len(self.register)):
+        #     print("register", self.register[y])
+        print("LOAD RAM:", self.ram)
+        print("LOAD REG:", self.register)
 
     def ram_read(self, memory_address):
         return self.ram[memory_address]
@@ -117,16 +119,17 @@ class CPU:
 
         if op == "ADD":
             print("opA", reg_a, "opB", reg_b)
-            # self.reg[reg_a] += self.reg[reg_b]
-            self.reg[reg_a] = reg_b
-            print("Register", self.reg[reg_a])
-            return reg_a + reg_b
+            # self.register[reg_a] += self.register[reg_b]
+            self.register[reg_a] = reg_b
+            print("Register", self.register[reg_a])
+            return self.register[reg_a]
 
         elif op == "MUL":
             print("opA", reg_a, "opB", reg_b)
-            self.reg[reg_a] = reg_b*reg_a
-            print("Register", self.reg[reg_a])
-            return reg_a * reg_b
+            # self.register[reg_a] = self.register[reg_b]*self.register[reg_a]
+            self.register[reg_a] *= self.register[reg_b]
+            print("Register at", self.register[reg_a])
+            return self.register[reg_a]
         # elif op == "SUB": etc
         else:
             raise Exception("Unsupported ALU operation")
@@ -147,7 +150,7 @@ class CPU:
         ), end='')
 
         for i in range(8):
-            print(" %02X" % self.reg[i], end='')
+            print(" %02X" % self.register[i], end='')
 
         print()
 
@@ -189,14 +192,15 @@ class CPU:
                 added = self.alu("ADD", operand_a, operand_b)
                 self.pc += 3
                 print("Added", added)
-                print(self.reg)
+                print(self.register)
                 continue
 
             elif IR == MUL:
                 multiplied = self.alu("MUL", operand_a, operand_b)
                 self.pc += 3
+                print("multiply at index zero", self.register[0])
                 print("MULTIPLIED", multiplied)
-                print(self.reg)
+                print(self.register)
                 continue
 
             elif IR == PRN:
@@ -204,26 +208,21 @@ class CPU:
                 self.pc += 2
 
             elif IR == PUSH:
-                # reg = self.ram[self.pc + 1]
-                # val = self.reg[reg]
-                # # Decrement the SP.
-                # self.reg[self.stack_pointer_index] -= 1
-                # # Copy the value in the given register to the address pointed to by SP.
-                # self.ram[reg[self.stack_pointer_index]] = val
+                # Push the value at pc in memory to the index of operand_a within register
+                self.register[self.sp_index] -= 1
+                value = self.register[operand_a]
+                self.ram[self.register[self.sp_index]] = value
                 print("IN PUSH, RAM", self.ram)
-                print("IN PUSH, REG", self.reg)
+                print("IN PUSH, REG", self.register)
                 self.pc += 2
                 pass
 
             elif IR == POP:
-                # reg = self.ram[self.pc + 1]
-                # val = self.reg[self.reg[self.stack_pointer_index]]
-                # # Copy the value from the address pointed to by SP to the given register.
-                # self.reg[reg] = val
-                # # Increment SP.
-                # self.reg[self.stack_pointer_index] += 1
+                value = self.ram[self.register[self.sp_index]]
+                self.register[operand_a] = value
+                self.register[self.sp_index] += 1
                 print("IN POP, RAM", self.ram)
-                print("IN POP, REG", self.reg)
+                print("IN POP, REG", self.register)
                 self.pc += 2
                 pass
 
